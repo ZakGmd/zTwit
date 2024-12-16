@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
+import TweetForm from './components/tweetForm';
+import TweetList from './components/tweetList';
+
+
+interface Tweet {
+  id: number;
+  content: string;
+  author: string;
+  createdAt: string;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tweets, setTweets] = useState<Tweet[]>([])
+
+  useEffect(() => {
+    fetchTweets()
+  }, [])
+
+  const fetchTweets = async () => {
+    const response = await fetch('http://localhost:3000/')
+    const data = await response.json()
+    setTweets(data)
+  }
+
+  const addTweet = async (content: string) => {
+    const response = await fetch('http://localhost:3000/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content, author: 'zak' }),
+    })
+    const newTweet = await response.json()
+    setTweets([newTweet, ...tweets])
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Twitter Clone</h1>
+      <TweetForm onSubmit={addTweet} />
+      <TweetList tweets={tweets} />
+    </div>
   )
 }
 
 export default App
+
